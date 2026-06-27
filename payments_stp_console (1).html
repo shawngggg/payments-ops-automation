@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Payments Operations — STP Console</title>
+<style>
+  :root{
+    --ink:#16223D; --navy:#1F3864; --steel:#3E5C8A; --gold:#C8920A; --ice:#EEF3FA;
+    --line:#D7E0EE; --txt:#1A2238; --muted:#6B7280; --paper:#F7F9FC;
+    --green:#1E7A46; --red:#B4232A; --amber:#B7791F; --blue:#2E5AAC; --purple:#6B4FA0;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--paper);color:var(--txt);font-size:14px}
+  .mono{font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace}
+  header{background:var(--ink);color:#fff;padding:14px 20px;display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+  header h1{font-size:17px;margin:0;font-weight:700;letter-spacing:.2px}
+  header .tag{font-size:11px;color:#9FB2D4;border:1px solid #33456b;border-radius:20px;padding:3px 10px}
+  header .clock{margin-left:auto;font-size:13px;color:#CADCFC}
+  .controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:10px 20px;background:#fff;border-bottom:1px solid var(--line)}
+  button{font:inherit;border:1px solid var(--line);background:#fff;color:var(--txt);border-radius:7px;padding:7px 13px;cursor:pointer;font-weight:600}
+  button:hover{border-color:var(--steel)}
+  button.primary{background:var(--navy);color:#fff;border-color:var(--navy)}
+  button.primary:hover{background:#16294d}
+  button.gold{background:var(--gold);color:#1c1402;border-color:var(--gold)}
+  button.ghost{background:#fff}
+  .controls label{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px}
+  input[type=range]{accent-color:var(--navy)}
+  .wrap{padding:16px 20px;max-width:1400px;margin:0 auto}
+  .kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:14px}
+  .kpi{background:#fff;border:1px solid var(--line);border-radius:10px;padding:11px 13px}
+  .kpi .v{font-size:24px;font-weight:800;color:var(--navy);line-height:1.1}
+  .kpi .l{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-top:3px}
+  .kpi.alt .v{color:var(--gold)}
+  .pipe{display:flex;gap:8px;align-items:stretch;margin-bottom:14px;flex-wrap:wrap}
+  .stage{flex:1;min-width:120px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 12px;position:relative}
+  .stage .n{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
+  .stage .c{font-size:20px;font-weight:800;color:var(--steel);margin-top:2px}
+  .stage.screen{border-color:#E4C98A;background:#FFFBF2}
+  .stage.screen .c{color:var(--gold)}
+  .stage .arrow{position:absolute;right:-12px;top:50%;transform:translateY(-50%);color:var(--line);font-size:16px;z-index:1}
+  .grid{display:grid;grid-template-columns:1fr 1.25fr;gap:14px}
+  .panel{background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden;display:flex;flex-direction:column}
+  .panel h2{font-size:13px;margin:0;padding:11px 14px;background:#F2F5FA;border-bottom:1px solid var(--line);
+    text-transform:uppercase;letter-spacing:.5px;color:var(--navy);display:flex;justify-content:space-between;align-items:center}
+  .panel h2 .sub{font-weight:600;color:var(--muted);font-size:11px;letter-spacing:.3px}
+  .feed{max-height:360px;overflow:auto}
+  .row{display:flex;align-items:center;gap:10px;padding:8px 14px;border-bottom:1px solid #EEF2F8;font-size:13px}
+  .row:last-child{border-bottom:none}
+  .row .rail{font-weight:700;width:78px;color:var(--navy)}
+  .row .amt{width:110px;text-align:right;color:var(--txt)}
+  .row .dir{width:64px;color:var(--muted);font-size:11px}
+  .badge{font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:20px;white-space:nowrap}
+  .b-stp{background:#E3F4EA;color:var(--green)}
+  .b-block{background:#FBE6E7;color:var(--red)}
+  .b-aml{background:#F6ECF7;color:var(--purple)}
+  .b-exc{background:#FCF1DD;color:var(--amber)}
+  .b-clear{background:#E6EEFB;color:var(--blue)}
+  .desk{max-height:430px;overflow:auto}
+  .item{padding:11px 14px;border-bottom:1px solid #EEF2F8}
+  .item:last-child{border-bottom:none}
+  .item .top{display:flex;align-items:center;gap:9px;margin-bottom:5px}
+  .item .top .rail{font-weight:700;color:var(--navy)}
+  .item .top .amt{margin-left:auto;font-weight:700}
+  .item .meta{font-size:12px;color:var(--muted);line-height:1.5}
+  .item .meta b{color:var(--txt);font-weight:600}
+  .item .esc{font-family:"SF Mono",ui-monospace,Menlo,monospace;font-size:11px;color:var(--steel)}
+  .item .acts{margin-top:7px;display:flex;gap:6px;flex-wrap:wrap}
+  .item .acts button{padding:4px 10px;font-size:12px}
+  .item .pre{display:inline-block;font-size:10px;font-weight:700;color:var(--red);border:1px solid #EAC4C6;border-radius:4px;padding:1px 5px;margin-left:6px}
+  .auto{font-size:11px;color:var(--blue);font-style:italic}
+  .empty{padding:26px 14px;text-align:center;color:var(--muted);font-size:13px}
+  .breaks{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
+  .bar{display:flex;align-items:center;gap:8px;padding:5px 14px;font-size:12.5px}
+  .bar .lab{width:160px;color:var(--txt)}
+  .bar .track{flex:1;background:#EEF2F8;border-radius:5px;height:14px;overflow:hidden}
+  .bar .fill{height:100%;background:var(--steel);border-radius:5px}
+  .bar .val{width:54px;text-align:right;color:var(--muted)}
+  footer{max-width:1400px;margin:0 auto;padding:8px 20px 26px;color:var(--muted);font-size:11.5px}
+  @media(max-width:960px){.kpis{grid-template-columns:repeat(3,1fr)}.grid{grid-template-columns:1fr}.breaks{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header>
+  <h1>Payments Operations — STP Console</h1>
+  <span class="tag">Illustrative demo · deterministic rules · no AI</span>
+  <span class="clock mono" id="clock">--:--</span>
+</header>
+
+<div class="controls">
+  <button class="primary" id="run">▶ Start</button>
+  <button class="ghost" id="step">Step</button>
+  <label>Speed <input type="range" id="speed" min="1" max="10" value="4"></label>
+  <button class="gold" id="burst">⚡ Inject burst</button>
+  <button class="ghost" id="reset">Reset</button>
+  <button class="ghost" id="export" style="margin-left:auto">⬇ Export processed (CSV)</button>
+</div>
+
+<div class="wrap">
+  <div class="kpis" id="kpis"></div>
+
+  <div class="pipe" id="pipe"></div>
+
+  <div class="grid">
+    <div class="panel">
+      <h2>Live payment feed <span class="sub" id="feedsub">most recent</span></h2>
+      <div class="feed" id="feed"><div class="empty">Press Start to begin processing payments.</div></div>
+    </div>
+    <div class="panel">
+      <h2>Exceptions &amp; investigations desk <span class="sub" id="desksub">0 open</span></h2>
+      <div class="desk" id="desk"><div class="empty">Exceptions and alerts surface here, with escalation path and recommended solution.</div></div>
+    </div>
+  </div>
+
+  <div class="breaks">
+    <div class="panel">
+      <h2>Exceptions by type</h2>
+      <div id="byType" style="padding:8px 0"><div class="empty">—</div></div>
+    </div>
+    <div class="panel">
+      <h2>Throughput by rail</h2>
+      <div id="byRail" style="padding:8px 0"><div class="empty">—</div></div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  Synthetic, in-browser simulation of the payments operating model. Classification uses the same deterministic rules as <span class="mono">payments_analyzer.py</span> (no AI, no API). Reference lists and thresholds are illustrative. Operational exceptions (format repair, returns, Travel Rule, cleared screening) auto-clear via automation; compliance-critical items (sanctions blocks, AML alerts, address risk) wait for a person — exactly the exception-based model the program targets.
+</footer>
+
+<script>
+// ---------- deterministic rules engine (mirrors payments_analyzer.py) ----------
+const RAILS=[['ACH',0.45],['RTP',0.20],['SWIFT',0.18],['Fedwire',0.12],['Stablecoin',0.05]];
+const AMT={ACH:[100,50000],RTP:[100,100000],SWIFT:[1000,2000000],Fedwire:[10000,5000000],Stablecoin:[1000,500000]};
+const CCY=['USD','EUR','GBP','JPY','CHF','CAD','SGD'];
+const GLOBAL=['GB','DE','FR','JP','CH','CA','SG','AE','HK','BR','MX','IN'];
+const CLEAN=['Acme Corp','Beta LLC','Jane Doe','John Smith','Globex Inc','Initech','Umbrella Co','Wayne Ltd','Stark Industries','Hooli','Pied Piper','Soylent Corp','Gekko Partners','Bluth Co','Vandelay Imports'];
+const WATCH=new Set(['ivan petrov','global shell holdings','red sea trading']);
+const SANC=new Set(['IR','KP','SY']); const HR=new Set(['NG','AF','YE']);
+const BADW=new Set(['0xbadwallet01','0xbadwallet02']);
+const IRREVOCABLE={RTP:1,Fedwire:1,SWIFT:1,Stablecoin:1};
+const EXC={
+ 'Sanctions hit (blocked)':['Screening L1 → Sanctions officer → block & OFAC report (≤10 bd)','Golden sanctions data + tuned real-time screening (F1/F2)'],
+ 'Sanctions hit (cleared)':['Screening L1 clears (good-guy match)','Tune matching / whitelist to cut false positives (F2)'],
+ 'AML alert':['Investigator L1 → Fin-crimes L2 → SAR decision (30/60d)','Behavioral tuning + case automation per rail (F6)'],
+ 'Format repair':['Repair queue L1 → supervisor if aged','ISO 20022 enrich + golden reference data (F1/F3)'],
+ 'Travel Rule incomplete':['Repair L1 → compliance → reject if non-compliant','Enforce Travel Rule data at capture; auto-populate'],
+ 'Address risk review':['Crypto-ops → compliance → pre-send block; SAR if warranted','Pre-send blockchain analytics + allow-listing'],
+ 'Return / NOC':['Auto-match L1 → exceptions desk if unmatched','Automated returns/NOC processing (A2)']
+};
+const STATUS={'Sanctions hit (blocked)':'Blocked','Sanctions hit (cleared)':'Held','AML alert':'Investigating',
+ 'Format repair':'Repairing','Travel Rule incomplete':'Repairing','Address risk review':'Reviewing','Return / NOC':'Returned'};
+const MANUAL=new Set(['Sanctions hit (blocked)','AML alert','Address risk review']);
+
+const ri=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+const ch=a=>a[Math.floor(Math.random()*a.length)];
+const logu=(lo,hi)=>Math.exp(Math.random()*(Math.log(hi)-Math.log(lo))+Math.log(lo));
+function pickRail(){let r=Math.random(),a=0;for(const[n,s]of RAILS){a+=s;if(r<a)return n;}return 'ACH';}
+function hex(n){let s='';for(let i=0;i<n;i++)s+='0123456789abcdef'[Math.floor(Math.random()*16)];return s;}
+
+let PID=700000;
+function genRaw(){
+  const rail=pickRail(); const [lo,hi]=AMT[rail];
+  const direction=Math.random()<0.66?'Outbound':'Inbound';
+  let amt=logu(lo,hi);
+  let ccy=rail==='SWIFT'?ch(CCY):'USD';
+  let ctry=rail==='SWIFT'?ch(GLOBAL):(Math.random()<0.96?'US':ch(GLOBAL));
+  let orig=ch(CLEAN), benef=ch(CLEAN);
+  let acct=rail==='Stablecoin'?('0x'+hex(8)):('ACC'+ri(1000,9999));
+  let tr='Y', rc='';
+  const r=Math.random();
+  if(r<0.004) benef=ch([...WATCH]);
+  else if(r<0.012&&rail==='SWIFT') ctry=ch([...SANC]);
+  else if(r<0.025) amt=9000+Math.random()*999.99;
+  else if(r<0.030&&rail==='SWIFT'){ctry=ch([...HR]); amt=1000000+Math.random()*1000000;}
+  else if(r<0.055) benef='';
+  else if(r<0.075&&amt>=3000) tr='N';
+  else if(r<0.085&&rail==='Stablecoin') acct=ch([...BADW]);
+  else if(rail==='ACH'&&direction==='Inbound'&&Math.random()<0.09) rc=ch(['R01','R02','R03','NOC']);
+  return {id:'P'+(PID++),rail,direction,amount:amt,currency:ccy,country:ctry,
+    originator:orig,beneficiary:benef,account:acct,travelRule:tr,returnCode:rc};
+}
+function analyze(t){
+  let screening='Pass',aml='N',sar='N',type='';
+  const amt=t.amount, orig=t.originator.toLowerCase(), benef=(t.beneficiary||'').toLowerCase(),
+        ctry=t.country, acct=(t.account||'').toLowerCase();
+  if(WATCH.has(orig)||WATCH.has(benef)){screening='Hit-blocked';type='Sanctions hit (blocked)';}
+  else if(SANC.has(ctry)){screening='Hit-cleared';type='Sanctions hit (cleared)';}
+  else if(amt>=9000&&amt<=9999.99){aml='Y';type='AML alert';}                 // structuring → alert (SAR only if substantiated)
+  else if(HR.has(ctry)&&amt>=1000000){aml='Y';sar='Y';type='AML alert';}      // high-risk + large → alert + SAR
+  else if(benef===''||acct===''){type='Format repair';}
+  else if(amt>=3000&&t.travelRule==='N'){type='Travel Rule incomplete';}
+  else if(t.rail==='Stablecoin'&&BADW.has(acct)){type='Address risk review';}
+  else if(t.rail==='ACH'&&t.direction==='Inbound'&&t.returnCode){type='Return / NOC';}
+  const meta=EXC[type]||['',''];
+  return Object.assign({},t,{screening,aml,sar,type,
+    status:STATUS[type]||'STP',escalation:meta[0],solution:meta[1],irrevocable:!!IRREVOCABLE[t.rail]});
+}
+
+// ---------- state ----------
+let S, timer=null, burstTicks=0, clock;
+function fresh(){
+  S={processed:0,stp:0,settled:0,exc:0,aml:0,sar:0,blocked:0,handled:0,
+     stages:{Capture:0,Screen:0,AML:0,Fund:0,Settle:0},
+     byType:{},byRail:{},desk:[],feed:[],log:[],deskId:0};
+  clock=new Date(2026,5,15,9,0,0);
+}
+fresh();
+
+const DESK_CAP=60;
+function record(e){
+  S.processed++; S.stages.Capture++; S.stages.Screen++;
+  S.byRail[e.rail]=(S.byRail[e.rail]||0)+1;
+  if(e.type==='') { S.stages.AML++; S.stages.Fund++; S.stages.Settle++; S.stp++; S.settled++; }
+  else {
+    S.exc++; S.byType[e.type]=(S.byType[e.type]||0)+1;
+    if(e.aml==='Y'){S.stages.AML++;}
+    if(e.aml==='Y') S.aml++;
+    if(e.sar==='Y') S.sar++;
+    if(e.type==='Sanctions hit (blocked)') S.blocked++;
+    S.desk.push({key:++S.deskId,id:e.id,rail:e.rail,amount:e.amount,direction:e.direction,
+      type:e.type,escalation:e.escalation,solution:e.solution,irrevocable:e.irrevocable,
+      age:0,manual:MANUAL.has(e.type)});
+    if(S.desk.length>DESK_CAP){ S.desk.shift(); S.handled++; }  // bound the desk so long runs stay smooth
+  }
+  S.feed.unshift({id:e.id,rail:e.rail,amount:e.amount,direction:e.direction,type:e.type||'STP'});
+  if(S.feed.length>14) S.feed.pop();
+  S.log.push([e.id,e.rail,e.direction,Math.round(e.amount),e.currency,e.country,e.screening,e.aml,e.sar,e.type||'',e.status]);
+}
+
+function tick(){
+  const sp=+document.getElementById('speed').value;
+  clock=new Date(clock.getTime()+sp*60000);
+  let n=sp*15;
+  if(burstTicks>0){ n+=80; burstTicks--; }
+  for(let i=0;i<n;i++) record(analyze(genRaw()));
+  if(S.log.length>5000) S.log.splice(0,S.log.length-5000);
+  // age + auto-clear operational exceptions (automation)
+  const keep=[];
+  for(const it of S.desk){
+    it.age++;
+    if(!it.manual && it.age>=4){ S.settled++; S.handled++; continue; } // auto-repaired / released
+    keep.push(it);
+  }
+  S.desk=keep;
+  render();
+}
+
+function resolve(key,kind){
+  const i=S.desk.findIndex(d=>d.key===key); if(i<0)return;
+  const it=S.desk[i];
+  if(kind==='sar'){ S.sar++; }
+  if(kind==='release'){ S.settled++; }
+  S.handled++; S.desk.splice(i,1); render();
+}
+
+// ---------- render ----------
+function fmt(n){return n.toLocaleString('en-US');}
+function money(a){return a.toLocaleString('en-US',{maximumFractionDigits:0});}
+function badge(type){
+  if(type==='STP')return '<span class="badge b-stp">STP · settled</span>';
+  if(type==='Sanctions hit (blocked)')return '<span class="badge b-block">Blocked</span>';
+  if(type==='Sanctions hit (cleared)')return '<span class="badge b-clear">Screen cleared</span>';
+  if(type==='AML alert')return '<span class="badge b-aml">AML alert</span>';
+  return '<span class="badge b-exc">'+type+'</span>';
+}
+function render(){
+  document.getElementById('clock').textContent=clock.toTimeString().slice(0,5)+'  ·  24/7';
+  const stpRate=S.processed?((S.stp/S.processed)*100).toFixed(1):'0.0';
+  const kpis=[['Processed',fmt(S.processed),''],['STP rate',stpRate+'%','alt'],
+    ['Open exceptions',fmt(S.desk.length),''],['AML alerts',fmt(S.aml),''],
+    ['SARs filed',fmt(S.sar),'alt'],['Sanctions blocked',fmt(S.blocked),'']];
+  document.getElementById('kpis').innerHTML=kpis.map(k=>
+    `<div class="kpi ${k[2]}"><div class="v">${k[1]}</div><div class="l">${k[0]}</div></div>`).join('');
+
+  const st=S.stages;
+  const stageDefs=[['Capture',st.Capture,''],['Screen · OFAC',st.Screen,'screen'],['AML monitor',st.AML,''],['Fund',st.Fund,''],['Settle',st.Settle,'']];
+  document.getElementById('pipe').innerHTML=stageDefs.map((s,i)=>
+    `<div class="stage ${s[2]}"><div class="n">${s[0]}</div><div class="c">${fmt(s[1])}</div>${i<stageDefs.length-1?'<span class="arrow">▶</span>':''}</div>`).join('');
+
+  document.getElementById('feedsub').textContent='most recent';
+  document.getElementById('feed').innerHTML = S.feed.length? S.feed.map(f=>
+    `<div class="row"><span class="rail">${f.rail}</span><span class="amt mono">${money(f.amount)}</span>`+
+    `<span class="dir">${f.direction}</span>${badge(f.type)}</div>`).join('')
+    : '<div class="empty">Press Start to begin processing payments.</div>';
+
+  document.getElementById('desksub').textContent=S.desk.length+' open';
+  const desk=document.getElementById('desk');
+  if(!S.desk.length){ desk.innerHTML='<div class="empty">No open exceptions — straight-through.</div>'; }
+  else{
+    desk.innerHTML=S.desk.slice(0,40).map(it=>{
+      let acts='';
+      if(it.manual){
+        if(it.type==='Sanctions hit (blocked)') acts=`<button class="primary" onclick="resolve(${it.key},'report')">Confirm block · file OFAC report</button>`;
+        else if(it.type==='AML alert') acts=`<button class="gold" onclick="resolve(${it.key},'sar')">File SAR</button><button class="ghost" onclick="resolve(${it.key},'release')">Close — no SAR</button>`;
+        else if(it.type==='Address risk review') acts=`<button class="primary" onclick="resolve(${it.key},'report')">Block pre-send</button><button class="ghost" onclick="resolve(${it.key},'release')">Allow-list</button>`;
+      } else {
+        acts=`<span class="auto">auto-clearing via automation…</span>`;
+      }
+      const pre=it.irrevocable?`<span class="pre">PRE-SEND · irrevocable</span>`:'';
+      return `<div class="item">
+        <div class="top"><span class="rail">${it.rail}</span>${badge(it.type)}${pre}<span class="amt mono">${money(it.amount)}</span></div>
+        <div class="meta"><b>${it.id}</b> · ${it.direction} · age ${it.age}t<br>
+          <span class="esc">↳ ${it.escalation}</span><br>
+          <b>Fix:</b> ${it.solution}</div>
+        <div class="acts">${acts}</div>
+      </div>`;
+    }).join('');
+  }
+
+  renderBars('byType',S.byType,'var(--amber)');
+  renderBars('byRail',S.byRail,'var(--steel)');
+}
+function renderBars(id,obj,color){
+  const el=document.getElementById(id);
+  const entries=Object.entries(obj).sort((a,b)=>b[1]-a[1]);
+  if(!entries.length){el.innerHTML='<div class="empty">—</div>';return;}
+  const max=Math.max(...entries.map(e=>e[1]));
+  el.innerHTML=entries.map(([k,v])=>
+    `<div class="bar"><span class="lab">${k}</span><span class="track"><span class="fill" style="width:${(v/max*100).toFixed(0)}%;background:${color}"></span></span><span class="val mono">${fmt(v)}</span></div>`).join('');
+}
+
+// ---------- controls ----------
+const runBtn=document.getElementById('run');
+function setRun(on){
+  if(on){ if(!timer) timer=setInterval(tick,600); runBtn.textContent='⏸ Pause'; runBtn.classList.add('gold'); }
+  else { clearInterval(timer); timer=null; runBtn.textContent='▶ Start'; runBtn.classList.remove('gold'); }
+}
+runBtn.onclick=()=>setRun(!timer);
+document.getElementById('step').onclick=()=>{ if(timer)setRun(false); tick(); };
+document.getElementById('burst').onclick=()=>{ burstTicks=6; if(!timer)setRun(true); };
+document.getElementById('reset').onclick=()=>{ setRun(false); fresh(); render(); };
+document.getElementById('export').onclick=()=>{
+  const head=['payment_id','rail','direction','amount_usd','currency','country','screening_result','aml_alert','sar_filed','exception_type','final_status'];
+  const rows=[head.join(',')].concat(S.log.map(r=>r.join(',')));
+  const blob=new Blob([rows.join('\n')],{type:'text/csv'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download='payments_console_export.csv'; a.click();
+};
+render();
+</script>
+</body>
+</html>
