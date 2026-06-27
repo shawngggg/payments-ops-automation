@@ -27,7 +27,6 @@ The program is built on three principles: **exception-based** (headcount scales 
 - Irrevocable rails tag exceptions **PRE-SEND** — the control clears before the money moves.
 - Operational exceptions auto-clear via automation; **compliance-critical items** (sanctions blocks, AML alerts, address risk) wait for a person, with real decision buttons.
 
-*(Tip: add a screen-recording GIF here — it's the single best thing for a README.)*
 
 ---
 
@@ -72,4 +71,4 @@ This is an illustrative design package, not a production system. Sample data is 
 
 ## License
 
-Code: MIT. Documents: CC BY 4.0. *(Adjust to your preference.)*
+Code: MIT. Documents: CC BY 4.0. 
