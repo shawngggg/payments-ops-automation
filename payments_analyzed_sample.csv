@@ -1,0 +1,17 @@
+payment_id,value_date,capture_time,rail,direction,amount_usd,currency,originator_name,beneficiary_name,counterparty_country,account_or_address,travel_rule_complete,return_code,screening_result,aml_alert,sar_filed,exception_type,final_status,escalation_path,recommended_solution
+P1,2026-06-15,10:02,ACH,Outbound,4200,USD,Acme Corp,Beta LLC,US,021000021/12345,Y,,Pass,N,N,,STP,,
+P2,2026-06-15,10:05,RTP,Outbound,850,USD,Jane Doe,John Smith,US,ROUTING/0001,Y,,Pass,N,N,,STP,,
+P3,2026-06-15,10:09,Fedwire,Outbound,250000,USD,Acme Corp,Ivan Petrov,RU,BIC/ACC9,Y,,Hit-blocked,N,N,Sanctions hit (blocked),Blocked,Screening L1 -> Sanctions officer -> block & OFAC report (<=10 bd),Golden sanctions data + tuned real-time screening (F1/F2)
+P4,2026-06-15,10:11,SWIFT,Outbound,90000,EUR,Acme Corp,Foreign Buyer,IR,BIC/ACC2,Y,,Hit-cleared,N,N,Sanctions hit (cleared),Repaired,Screening L1 clears (good-guy match),Tune matching / whitelist to cut false positives (F2)
+P5,2026-06-15,10:14,ACH,Outbound,9500,USD,Bob Jones,Carl White,US,ROUTING/0007,Y,,Pass,Y,N,AML alert,Investigated,Investigator L1 -> Fin-crimes L2 -> SAR e-file FinCEN (30/60d) -> 90d review,Behavioral tuning + case automation per rail (F6)
+P6,2026-06-15,10:18,SWIFT,Outbound,1200000,USD,Big Co,Trade Partner,NG,BIC/ACC3,Y,,Pass,Y,Y,AML alert,Investigated,Investigator L1 -> Fin-crimes L2 -> SAR e-file FinCEN (30/60d) -> 90d review,Behavioral tuning + case automation per rail (F6)
+P7,2026-06-15,10:21,ACH,Outbound,5000,USD,Acme Corp,,US,021000021/,Y,,Pass,N,N,Format repair,Repaired,Repair queue L1 -> supervisor if aged,ISO 20022 enrich + golden reference data (F1/F3)
+P8,2026-06-15,10:24,SWIFT,Outbound,8000,USD,Acme Corp,Overseas Ltd,DE,BIC/ACC4,N,,Pass,N,N,Travel Rule incomplete,Repaired,Repair L1 -> compliance -> reject if non-compliant,Enforce Travel Rule data at capture; auto-populate
+P9,2026-06-15,10:27,Stablecoin,Outbound,25000,USD,Acme Corp,Wallet Holder,US,0xBADWALLET01,Y,,Pass,N,N,Address risk review,Investigated,Crypto-ops -> compliance -> pre-send block; SAR if warranted,Pre-send blockchain analytics + allow-listing
+P10,2026-06-15,10:30,ACH,Inbound,1500,USD,Payer Inc,Acme Corp,US,ROUTING/0010,Y,R01,Pass,N,N,Return / NOC,Returned,Auto-match L1 -> exceptions desk if unmatched,Automated returns/NOC processing (A2)
+P11,2026-06-15,10:33,Fedwire,Outbound,750000,USD,Acme Corp,Clean Counterparty,US,BIC/ACC5,Y,,Pass,N,N,,STP,,
+P12,2026-06-15,10:36,RTP,Outbound,60000,USD,Jane Doe,Mike Brown,US,ROUTING/0012,Y,,Pass,N,N,,STP,,
+P13,2026-06-15,10:39,Stablecoin,Outbound,40000,USD,Acme Corp,Good Wallet,US,0xGOODWALLET,Y,,Pass,N,N,,STP,,
+P14,2026-06-15,10:42,SWIFT,Inbound,30000,GBP,Foreign Sender,Acme Corp,GB,BIC/ACC6,Y,,Pass,N,N,,STP,,
+P15,2026-06-15,10:45,ACH,Outbound,9900,USD,Structurer,Mule Acct,US,ROUTING/0015,Y,,Pass,Y,N,AML alert,Investigated,Investigator L1 -> Fin-crimes L2 -> SAR e-file FinCEN (30/60d) -> 90d review,Behavioral tuning + case automation per rail (F6)
+P16,2026-06-15,10:48,Stablecoin,Outbound,15000,USD,Acme Corp,Holder,US,0xBADWALLET02,Y,,Pass,N,N,Address risk review,Investigated,Crypto-ops -> compliance -> pre-send block; SAR if warranted,Pre-send blockchain analytics + allow-listing
