@@ -4,7 +4,7 @@
 
 > ⚠️ **Illustrative / portfolio project.** All data is **synthetic**, all figures are placeholders, and this is **not affiliated with or representing any employer**. No real or confidential information is used. Regulatory details are flagged for verification.
 
-**🔗 **🔗 [Live demo](https://shawngggg.github.io/payments-ops-automation/)**  ·  **📄 [Program profile](payments_program_profile.md)**  ·  **🧠 [How the analysis works](payments_analysis_pipeline.md)**
+**🔗 [Live demo](https://shawngggg.github.io/payments-ops-automation/)**  ·  **📄 [Program profile](payments_program_profile.md)**  ·  **🧠 [How the analysis works](payments_analysis_pipeline.md)**
 
 ---
 
